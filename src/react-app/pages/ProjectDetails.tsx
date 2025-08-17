@@ -12,10 +12,21 @@ import {
   BarChart3,
   Download,
   Github,
-  ExternalLink
+  ExternalLink,
+  CreditCard,
+  Zap
 } from 'lucide-react';
 import { Project } from '@/shared/types';
 import GitHubIntegration from '@/react-app/components/GitHubIntegration';
+import LandingPageBuilder from '../components/LandingPageBuilder';
+import CampaignManager from '../components/CampaignManager';
+import { AnalyticsDashboard } from '../components/AnalyticsDashboard';
+import { AdvancedAnalyticsDashboard } from '../components/AdvancedAnalyticsDashboard';
+import { PaymentModal } from '../components/PaymentModal';
+import BillingDashboard from '../components/BillingDashboard';
+import GA4AnalyticsDashboard from '../components/GA4AnalyticsDashboard';
+import { ReportGenerator } from '../components/ReportGenerator';
+import ABTestManager from '../components/ABTestManager';
 
 interface ProjectDetailsData {
   project: Project;
@@ -31,6 +42,9 @@ export default function ProjectDetails() {
   const [data, setData] = useState<ProjectDetailsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatingPrototype, setGeneratingPrototype] = useState(false);
+  const [showLandingPageBuilder, setShowLandingPageBuilder] = useState(false);
+  const [activeTab, setActiveTab] = useState<'overview' | 'prototype' | 'landing' | 'campaign' | 'analytics' | 'advanced-analytics' | 'ga4-analytics' | 'reports' | 'billing'>('overview');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     fetchProjectData();
@@ -132,27 +146,111 @@ export default function ProjectDetails() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => navigate('/')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Project Details</h1>
-              <p className="text-sm text-gray-600">
-                Created {new Date(project.createdAt).toLocaleDateString()}
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/')}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-xl font-semibold text-gray-900">{project.ideaDescription}</h1>
+                <p className="text-sm text-gray-600">
+                  Created {new Date(project.createdAt).toLocaleDateString()}
+                </p>
+              </div>
             </div>
+            
+            {/* Payment Button */}
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
+            >
+              <CreditCard className="w-4 h-4" />
+              <span>Validate for $100</span>
+            </button>
+          </div>
+          
+          {/* Tab Navigation */}
+          <div className="mt-6 border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {[
+                { key: 'overview', label: 'Overview', icon: FileText },
+                { key: 'prototype', label: 'Prototype', icon: Wand2 },
+                { key: 'landing', label: 'Landing Page', icon: Globe },
+                { key: 'campaign', label: 'Campaign', icon: TrendingUp },
+                { key: 'ab-testing', label: 'A/B Testing', icon: Zap },
+              ].map(({ key, label, icon: Icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveTab(key as any)}
+                  className={`flex items-center space-x-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === key
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{label}</span>
+                </button>
+              ))}
+              <button
+                onClick={() => setActiveTab('advanced-analytics')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'advanced-analytics'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4 inline mr-2" />
+                Advanced Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab('ga4-analytics')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'ga4-analytics'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <TrendingUp className="w-4 h-4 inline mr-2" />
+                GA4 Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'reports'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <FileText className="w-4 h-4 inline mr-2" />
+                Reports
+              </button>
+              <button
+                onClick={() => setActiveTab('billing')}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  activeTab === 'billing'
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <CreditCard className="w-4 h-4 inline mr-2" />
+                Billing
+              </button>
+            </nav>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Project Info */}
-          <div className="lg:col-span-2 space-y-6">
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {activeTab === 'overview' && (
+            <div className="grid lg:grid-cols-3 gap-8">
+              {/* Left Column - Project Info */}
+              <div className="lg:col-span-2 space-y-6">
             {/* Project Overview */}
             <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-gray-200 p-6">
               <div className="flex items-center space-x-3 mb-4">
@@ -390,6 +488,166 @@ export default function ProjectDetails() {
             </div>
           </div>
         </div>
+      </div>
+    )}
+
+    {/* Other Tab Contents */}
+    {activeTab === 'prototype' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">AI Prototype</h2>
+        {prototype ? (
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Hero Copy</h3>
+              <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{prototype.hero_copy}</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Key Features</h3>
+              <div className="grid md:grid-cols-2 gap-2">
+                {JSON.parse(prototype.features_json || '[]').map((feature: string, index: number) => (
+                  <div key={index} className="bg-gray-50 p-2 rounded-lg text-sm text-gray-700">
+                    • {feature}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500">No prototype generated yet</p>
+            <button
+              onClick={generatePrototype}
+              disabled={generatingPrototype}
+              className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            >
+              {generatingPrototype ? 'Generating...' : 'Generate Prototype'}
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+
+    {activeTab === 'landing' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Landing Page</h2>
+        {landingPage ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-gray-900">Page Status: Live</h3>
+                <p className="text-sm text-gray-600">Your landing page is deployed and collecting data</p>
+              </div>
+              <a
+                href={landingPage.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2"
+              >
+                <Globe className="w-4 h-4" />
+                <span>View Page</span>
+              </a>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <Globe className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500">No landing page created yet</p>
+            <p className="text-sm text-gray-400 mb-4">Generate a prototype first to create your landing page</p>
+          </div>
+        )}
+      </div>
+    )}
+
+    {activeTab === 'campaign' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Marketing Campaign</h2>
+        <div className="text-center py-8">
+          <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+          <p className="text-gray-500">Campaign management coming soon</p>
+          <p className="text-sm text-gray-400">Launch targeted campaigns to validate market demand</p>
+        </div>
+      </div>
+    )}
+
+    {activeTab === 'analytics' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Analytics</h2>
+        {analytics ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{analytics.page_views}</div>
+              <div className="text-sm text-gray-600">Page Views</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{analytics.email_signups}</div>
+              <div className="text-sm text-gray-600">Email Signups</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gray-900">{analytics.conversions}</div>
+              <div className="text-sm text-gray-600">Conversions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{analytics.demand_score}/100</div>
+              <div className="text-sm text-gray-600">Demand Score</div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-500">No analytics data available yet</p>
+            <p className="text-sm text-gray-400">Data will appear once your landing page is live</p>
+          </div>
+        )}
+      </div>
+    )}
+
+    {activeTab === 'advanced-analytics' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <AdvancedAnalyticsDashboard projectId={project.id} />
+      </div>
+    )}
+
+    {activeTab === 'ga4-analytics' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <GA4AnalyticsDashboard 
+          projectId={project.id} 
+          landingPageUrl={landingPage?.url} 
+        />
+      </div>
+    )}
+
+    {activeTab === 'reports' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <ReportGenerator 
+          projectId={project.id} 
+          projectTitle={project.ideaDescription.substring(0, 50) + '...'} 
+        />
+      </div>
+    )}
+
+    {activeTab === 'ab-testing' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <ABTestManager projectId={project.id} />
+      </div>
+    )}
+
+    {activeTab === 'billing' && (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <BillingDashboard userId={project.userId} />
+      </div>
+    )}
+  </div>
+
+  {/* Payment Modal */}
+  {showPaymentModal && (
+    <PaymentModal
+      isOpen={showPaymentModal}
+      onClose={() => setShowPaymentModal(false)}
+      projectId={project.id}
+      projectTitle={project.ideaDescription}
+    />
+  )}
       </main>
     </div>
   );
